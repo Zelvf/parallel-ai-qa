@@ -1,0 +1,7 @@
+node_modules
+.next
+.parallel
+public/runs/
+.env.local
+.env*.local
+*.tsbuildinfo

@@ -1,0 +1,5 @@
+.env.example
+.parallel/
+public/runs/
+LICENSE
+next-env.d.ts
