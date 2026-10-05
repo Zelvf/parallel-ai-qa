@@ -60,6 +60,7 @@ export default function Home() {
   const [runs, setRuns] = useState<ScanRun[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [aiConfigured, setAiConfigured] = useState(false);
+  const [scanAvailable, setScanAvailable] = useState<boolean | null>(null);
   const [target, setTarget] = useState("lab");
   const [customUrl, setCustomUrl] = useState("");
   const [objective, setObjective] = useState(starterObjective);
@@ -74,6 +75,7 @@ export default function Home() {
       const data = await response.json();
       setRuns(data.runs || []);
       setAiConfigured(Boolean(data.aiConfigured));
+      setScanAvailable(Boolean(data.scanAvailable));
     } catch {
       /* Keep the last displayed run while the local server restarts. */
     }
@@ -254,7 +256,11 @@ export default function Home() {
               </div>
               <div className="engine-badge">
                 <span className="engine-badge-dot" />{" "}
-                {aiConfigured ? "AI EXPLORATION READY" : "GUIDED BROWSER MODE"}
+                {scanAvailable === false
+                  ? "HOSTED PREVIEW"
+                  : aiConfigured
+                    ? "AI EXPLORATION READY"
+                    : "GUIDED BROWSER MODE"}
               </div>
             </div>
             <div className="target-selector">
@@ -313,22 +319,33 @@ export default function Home() {
             <div className="launch-bottom">
               <div className="launch-note">
                 <Sparkles size={16} />{" "}
-                {target === "lab"
-                  ? "Runs a scripted test across desktop, mobile, and slow network."
-                  : aiConfigured
-                    ? "AI chooses browser actions from visible controls."
-                    : "Without an API key, scans same-origin links and captures failures."}
+                {scanAvailable === false
+                  ? "Explore the sample store here. Run browser scans from the local app."
+                  : target === "lab"
+                    ? "Runs a scripted test across desktop, mobile, and slow network."
+                    : aiConfigured
+                      ? "AI chooses browser actions from visible controls."
+                      : "Without an API key, scans same-origin links and captures failures."}
               </div>
-              <button
-                className="launch-button"
-                onClick={startScan}
-                disabled={
-                  submitting || !objective.trim() || (target === "custom" && !customUrl.trim())
-                }
-              >
-                <Play size={16} fill="currentColor" /> {submitting ? "Starting…" : "Start scan"}{" "}
-                <ArrowRight size={17} />
-              </button>
+              {scanAvailable === false ? (
+                <a className="launch-button" href="/lab/checkout">
+                  <FlaskConical size={16} /> Explore lab <ArrowRight size={17} />
+                </a>
+              ) : (
+                <button
+                  className="launch-button"
+                  onClick={startScan}
+                  disabled={
+                    scanAvailable !== true ||
+                    submitting ||
+                    !objective.trim() ||
+                    (target === "custom" && !customUrl.trim())
+                  }
+                >
+                  <Play size={16} fill="currentColor" /> {submitting ? "Starting…" : "Start scan"}{" "}
+                  <ArrowRight size={17} />
+                </button>
+              )}
             </div>
             {error && (
               <div className="form-error" role="alert">
@@ -546,7 +563,11 @@ export default function Home() {
             <span>PARALLEL / AI BROWSER TESTING LAB</span>
             <span>
               Built for controlled test environments ·{" "}
-              {aiConfigured ? "AI configured" : "AI key optional"}
+              {scanAvailable === false
+                ? "Hosted portfolio preview"
+                : aiConfigured
+                  ? "AI configured"
+                  : "AI key optional"}
             </span>
           </footer>
         </div>

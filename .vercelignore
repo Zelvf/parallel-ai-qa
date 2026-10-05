@@ -1,0 +1,4 @@
+.parallel/
+public/runs/
+.env.local
+.env*.local

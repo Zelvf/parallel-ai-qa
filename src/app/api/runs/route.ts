@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { listRuns, saveRun } from "@/lib/store";
-import { runScan } from "@/lib/runner";
 import type { ScanRun } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -12,13 +11,23 @@ const schema = z.object({
 });
 
 export async function GET() {
+  const scanAvailable = !process.env.VERCEL;
   return NextResponse.json({
-    runs: await listRuns(),
+    runs: scanAvailable ? await listRuns() : [],
     aiConfigured: Boolean(process.env.OPENAI_API_KEY),
+    scanAvailable,
   });
 }
 
 export async function POST(request: NextRequest) {
+  if (process.env.VERCEL) {
+    return NextResponse.json(
+      {
+        error: "Browser scans run in the local app. The Vercel deployment is a portfolio preview.",
+      },
+      { status: 501 },
+    );
+  }
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
     return NextResponse.json({ error: "Enter a valid target and objective." }, { status: 400 });
@@ -54,6 +63,7 @@ export async function POST(request: NextRequest) {
     ],
   };
   await saveRun(run);
+  const { runScan } = await import("@/lib/runner");
   void runScan(run);
   return NextResponse.json({ run }, { status: 202 });
 }

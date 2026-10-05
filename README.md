@@ -8,6 +8,10 @@ The included sample checkout has an intentional bug: an expired coupon returns a
 
 [Mobile dashboard view](docs/mobile.png)
 
+## Hosted preview
+
+The Vercel deployment shows the dashboard and a working sample store. Browser scans are available from the local app only. The hosted dashboard labels this clearly and links to the sample store; its scan API returns HTTP 501 instead of pretending to start a run. A cloud scan service would need a persistent browser worker and durable artifact storage.
+
 ## Run locally
 
 Requires Node.js 22+.
@@ -56,7 +60,7 @@ Next.js dashboard → /api/runs → local scan runner
                                       ↓
                               events + findings + artifacts
                                       ↓
-                           .parallel/runs + public/runs
+                        .parallel/runs + .parallel/artifacts
 ```
 
 Scans run in the local Next.js process. This app is intended for a persistent local or self-hosted Node server; a serverless deployment needs a separate durable browser worker and artifact storage. Scan metadata is saved under `.parallel/runs`. Screenshots and traces are saved under `.parallel/artifacts` and served through a read-only API route. The `.parallel` directory is gitignored.
